@@ -4,12 +4,12 @@ pub struct ListNode<T> {
     //Single Node in a Linked List. Contains a Value T,
     //and a next field that potentially points to the next Node.
     pub value: T,
-    pub next: Option<Box<ListNode<T>>>,
+    next: Option<Box<ListNode<T>>>,
 }
 
 //An Enum that Handles Errors in LinkedList Operations
 #[derive(Debug)]
-enum OperationsError {
+pub enum OperationsError {
     ListNotLongEnough,
     CannotPerformOnHead,
 }
@@ -58,7 +58,7 @@ impl<T> FromIterator<T> for ListNode<T> {
 }
 
 impl<T> ListNode<T> {
-    fn iter_mut(&mut self) -> ListNodeMutableIterator<T> {
+    pub fn iter_mut(&mut self) -> ListNodeMutableIterator<T> {
         //Iterate over the Linked List, inserting &mut T into the VecDeque
         let mut outbound_vec = VecDeque::new();
         let mut current_node = self;
@@ -73,7 +73,7 @@ impl<T> ListNode<T> {
         }
     }
 
-    fn remove(&mut self, position_to_remove: usize) -> Result<T, OperationsError> {
+    pub fn remove(&mut self, position_to_remove: usize) -> Result<T, OperationsError> {
         //This method cannot remove the head node, as that would require ownership to drop
         //if position_to_remove is 0, just return an Err
         if position_to_remove == 0 {
@@ -113,7 +113,7 @@ impl<T> ListNode<T> {
         }
     }
 
-    fn insert(&mut self, t: T, position_to_insert: usize) -> Result<(), OperationsError> {
+    pub fn insert(&mut self, t: T, position_to_insert: usize) -> Result<(), OperationsError> {
         //Insert a New Node somewhere in the Linked List determined by the position_to_insert
         //param.
         let mut counter = 0 as usize;
@@ -152,7 +152,7 @@ impl<T> ListNode<T> {
         Ok(())
     }
 
-    fn iter(&self) -> ListNodeIteratorRef<T> {
+    pub fn iter(&self) -> ListNodeIteratorRef<T> {
         //Iterate over the Linked List, putting values into a VecDeque as a reference
         let mut outbound_vec = VecDeque::new();
         let mut current_node = self;
@@ -170,7 +170,7 @@ impl<T> ListNode<T> {
 }
 
 impl<T> ListNode<T> {
-    fn new(t: T) -> Self {
+    pub fn new(t: T) -> Self {
         //Create a New ListNode
         ListNode {
             value: t,
@@ -178,7 +178,7 @@ impl<T> ListNode<T> {
         }
     }
 
-    fn pop_front(self) -> Result<ListNode<T>, OperationsError> {
+    pub fn pop_front(self) -> Result<ListNode<T>, OperationsError> {
         //Easy O(1) removal of the first element in the list.
         //To do this, we need to consume the Head and return a new head.
         match self.next {
@@ -187,7 +187,7 @@ impl<T> ListNode<T> {
         }
     }
 
-    fn prepend(self, t: T) -> ListNode<T> {
+    pub fn prepend(self, t: T) -> ListNode<T> {
         //Consumes self, as we need to Box the old Node, creates a new head of the linked list
         //returns the new head, as the old one has been consumed. Note that this is a O(1) operation.
         let mut new_head = ListNode::new(t);
@@ -195,7 +195,7 @@ impl<T> ListNode<T> {
         new_head
     }
 
-    fn append(&mut self, t: T) {
+    pub fn append(&mut self, t: T) {
         //Takes a mut self, because we will need to potentially mutate the first struct passed in.
         //This is an O(N) operation as the entire list must be traversed to reach the end.
         let mut current_node = self;
@@ -210,12 +210,12 @@ impl<T> ListNode<T> {
         }
     }
 
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         //Returns the length of the Linked List
         return self.iter().count();
     }
 
-    fn has_value(&self, t: T) -> bool
+    pub fn has_value(&self, t: T) -> bool
     where
         T: std::cmp::PartialEq,
     {
@@ -242,7 +242,7 @@ impl<T> Iterator for ListNodeIterator<T> {
     }
 }
 
-struct ListNodeMutableIterator<'a, T> {
+pub struct ListNodeMutableIterator<'a, T> {
     //Stores a mutable reference to each T.
     items: VecDeque<&'a mut T>,
 }
@@ -254,7 +254,7 @@ impl<'a, T> Iterator for ListNodeMutableIterator<'a, T> {
     }
 }
 
-struct ListNodeIteratorRef<'a, T> {
+pub struct ListNodeIteratorRef<'a, T> {
     items: VecDeque<&'a T>,
 }
 
