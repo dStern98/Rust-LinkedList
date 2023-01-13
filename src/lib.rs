@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 
+#[derive(Debug)]
 pub struct ListNode<T> {
     //Single Node in a Linked List. Contains a Value T,
     //and a next field that potentially points to the next Node.
@@ -16,7 +17,7 @@ pub enum OperationsError {
 
 impl<T> IntoIterator for ListNode<T> {
     type Item = T;
-    type IntoIter = ListNodeIterator<T>;
+    type IntoIter = IntoIter<T>;
     fn into_iter(self) -> Self::IntoIter {
         let mut outbound_vec = VecDeque::new();
         let mut current_node = self;
@@ -26,7 +27,7 @@ impl<T> IntoIterator for ListNode<T> {
         }
         outbound_vec.push_back(current_node.value);
 
-        ListNodeIterator {
+        IntoIter {
             items: outbound_vec,
         }
     }
@@ -51,14 +52,14 @@ impl<T> FromIterator<T> for ListNode<T> {
             }
         }
         //This will panic if the passed in iterator containers no elements,
-        //but since under my implementation one cannot produce a ListNode<T> with no value,
-        //the panic is acceptable under the circumstances
+        //but since under this implementation one cannot produce a ListNode<T> with no value,
+        //the panic is acceptable under the circumstances (no Self can be returned or constructed)
         return initial_head.unwrap();
     }
 }
 
 impl<T> ListNode<T> {
-    pub fn iter_mut(&mut self) -> ListNodeMutableIterator<T> {
+    pub fn iter_mut(&mut self) -> IterMut<T> {
         //Iterate over the Linked List, inserting &mut T into the VecDeque
         let mut outbound_vec = VecDeque::new();
         let mut current_node = self;
@@ -68,7 +69,7 @@ impl<T> ListNode<T> {
         }
         outbound_vec.push_back(&mut current_node.value);
 
-        ListNodeMutableIterator {
+        IterMut {
             items: outbound_vec,
         }
     }
@@ -152,7 +153,7 @@ impl<T> ListNode<T> {
         Ok(())
     }
 
-    pub fn iter(&self) -> ListNodeIteratorRef<T> {
+    pub fn iter(&self) -> Iter<T> {
         //Iterate over the Linked List, putting values into a VecDeque as a reference
         let mut outbound_vec = VecDeque::new();
         let mut current_node = self;
@@ -163,7 +164,7 @@ impl<T> ListNode<T> {
         //When the loop breaks, there is one last node to push
         outbound_vec.push_back(&current_node.value);
 
-        ListNodeIteratorRef {
+        Iter {
             items: outbound_vec,
         }
     }
@@ -229,36 +230,36 @@ impl<T> ListNode<T> {
     }
 }
 
-pub struct ListNodeIterator<T> {
+pub struct IntoIter<T> {
     //struct for the IntoIter trait.
     //Consumes the T when the struct is built.
     items: VecDeque<T>,
 }
 
-impl<T> Iterator for ListNodeIterator<T> {
+impl<T> Iterator for IntoIter<T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
         self.items.pop_front()
     }
 }
 
-pub struct ListNodeMutableIterator<'a, T> {
+pub struct IterMut<'a, T> {
     //Stores a mutable reference to each T.
     items: VecDeque<&'a mut T>,
 }
 
-impl<'a, T> Iterator for ListNodeMutableIterator<'a, T> {
+impl<'a, T> Iterator for IterMut<'a, T> {
     type Item = &'a mut T;
     fn next(&mut self) -> Option<Self::Item> {
         self.items.pop_front()
     }
 }
 
-pub struct ListNodeIteratorRef<'a, T> {
+pub struct Iter<'a, T> {
     items: VecDeque<&'a T>,
 }
 
-impl<'a, T> Iterator for ListNodeIteratorRef<'a, T> {
+impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         self.items.pop_front()
