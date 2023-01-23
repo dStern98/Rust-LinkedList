@@ -1,3 +1,4 @@
+use core::fmt;
 use std::collections::VecDeque;
 
 #[derive(Debug)]
@@ -13,6 +14,15 @@ pub struct ListNode<T> {
 pub enum OperationsError {
     ListNotLongEnough,
     CannotPerformOnHead,
+}
+
+impl<T> fmt::Display for ListNode<T>
+where
+    T: std::fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "ListNode with value {}", self.value)
+    }
 }
 
 impl<T> IntoIterator for ListNode<T> {
@@ -447,5 +457,11 @@ mod tests {
         let captured_vec: Vec<&i32> = linked_list1.iter().collect();
         assert_eq!(captured_vec, vec![&1, &2, &4]);
         assert!(res3.is_err());
+    }
+
+    #[test]
+    fn test_display() {
+        let list_head = ListNode::new(5);
+        assert_eq!(format!("{}", list_head), "ListNode with value 5");
     }
 }
