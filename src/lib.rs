@@ -1,5 +1,7 @@
 use core::fmt;
 use std::collections::VecDeque;
+mod iterators;
+use iterators::Iter;
 
 #[derive(Debug)]
 pub struct ListNode<T> {
@@ -112,8 +114,7 @@ impl<T> ListNode<T> {
             if node_to_remove.next.is_some() {
                 //If there is a node after the node we are removing, then we have to set the
                 //next field in the current_node to the next node in the node_to_remove
-                let new_next_node = node_to_remove.next.take();
-                current_node.next = new_next_node;
+                current_node.next = node_to_remove.next.take();
             }
             //If there is no next node after the node to remove, then we are
             //finished, as the node we are removing is the end of the list
@@ -163,24 +164,9 @@ impl<T> ListNode<T> {
         Ok(())
     }
 
-    pub fn iter(&self) -> Iter<T> {
-        //Iterate over the Linked List, putting values into a VecDeque as a reference
-        let mut outbound_vec = VecDeque::new();
-        let mut current_node = self;
-        while let Some(ref next_node) = current_node.next {
-            outbound_vec.push_back(&current_node.value);
-            current_node = &*next_node;
-        }
-        //When the loop breaks, there is one last node to push
-        outbound_vec.push_back(&current_node.value);
-
-        Iter {
-            items: outbound_vec,
-        }
+    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
+        Iter::new(&self)
     }
-}
-
-impl<T> ListNode<T> {
     pub fn new(t: T) -> Self {
         //Create a New ListNode
         ListNode {
@@ -260,17 +246,6 @@ pub struct IterMut<'a, T> {
 
 impl<'a, T> Iterator for IterMut<'a, T> {
     type Item = &'a mut T;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.items.pop_front()
-    }
-}
-
-pub struct Iter<'a, T> {
-    items: VecDeque<&'a T>,
-}
-
-impl<'a, T> Iterator for Iter<'a, T> {
-    type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         self.items.pop_front()
     }
