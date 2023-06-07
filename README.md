@@ -73,9 +73,4 @@ As such the list can be iterated in a for...in loop.
 In addition, the methods `iter_mut` & `iter` are implemented, allowing
 iteration over `&mut T` and `&T` respectively. Finally, the trait `FromIterator`
 is implemented, allowing a new Linked List to be built from an iterator.
-
----
-
-## Tests
-
-Unit tests have been written for all methods listed above.
+All iterators are in the `iterators.rs` file.

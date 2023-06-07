@@ -1,7 +1,6 @@
 use core::fmt;
-use std::collections::VecDeque;
 mod iterators;
-use iterators::Iter;
+use iterators::{IntoIter, Iter, IterMut};
 
 #[derive(Debug)]
 pub struct ListNode<T> {
@@ -31,17 +30,7 @@ impl<T> IntoIterator for ListNode<T> {
     type Item = T;
     type IntoIter = IntoIter<T>;
     fn into_iter(self) -> Self::IntoIter {
-        let mut outbound_vec = VecDeque::new();
-        let mut current_node = self;
-        while let Some(next_node) = current_node.next {
-            outbound_vec.push_back(current_node.value);
-            current_node = *next_node;
-        }
-        outbound_vec.push_back(current_node.value);
-
-        IntoIter {
-            items: outbound_vec,
-        }
+        IntoIter::new(self)
     }
 }
 
@@ -73,17 +62,7 @@ impl<T> FromIterator<T> for ListNode<T> {
 impl<T> ListNode<T> {
     pub fn iter_mut(&mut self) -> IterMut<T> {
         //Iterate over the Linked List, inserting &mut T into the VecDeque
-        let mut outbound_vec = VecDeque::new();
-        let mut current_node = self;
-        while let Some(ref mut next_node) = current_node.next {
-            outbound_vec.push_back(&mut current_node.value);
-            current_node = &mut *next_node;
-        }
-        outbound_vec.push_back(&mut current_node.value);
-
-        IterMut {
-            items: outbound_vec,
-        }
+        IterMut::new(self)
     }
 
     pub fn remove(&mut self, position_to_remove: usize) -> Result<T, OperationsError> {
@@ -226,41 +205,23 @@ impl<T> ListNode<T> {
     }
 }
 
-pub struct IntoIter<T> {
-    //struct for the IntoIter trait.
-    //Consumes the T when the struct is built.
-    items: VecDeque<T>,
-}
-
-impl<T> Iterator for IntoIter<T> {
-    type Item = T;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.items.pop_front()
-    }
-}
-
-pub struct IterMut<'a, T> {
-    //Stores a mutable reference to each T.
-    items: VecDeque<&'a mut T>,
-}
-
-impl<'a, T> Iterator for IterMut<'a, T> {
-    type Item = &'a mut T;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.items.pop_front()
-    }
-}
-
 impl<T> PartialEq for ListNode<T>
 where
     T: std::cmp::PartialEq,
 {
     fn eq(&self, other: &ListNode<T>) -> bool {
-        //To determine if equal, just collect the two lists and compare them
-        // as Vecs. Simple and effective.
-        let v1: Vec<&T> = self.iter().collect();
-        let v2: Vec<&T> = other.iter().collect();
-        return v1 == v2;
+        //To determine equality, first check the respective lengths.
+        if self.len() != other.len() {
+            return false;
+        }
+        //If the lengths are equal, simply zip the two iterators, and compare each pair of
+        //items.
+        for (self_item, other_item) in self.iter().zip(other.iter()) {
+            if self_item != other_item {
+                return false;
+            }
+        }
+        return true;
     }
 }
 
@@ -296,25 +257,6 @@ mod tests {
     }
 
     #[test]
-    fn test_iter_mut() {
-        let mut append_head = ListNode::new(1);
-        append_head.append(2);
-        append_head.append(3);
-        append_head.append(4);
-        append_head.append(5);
-
-        for value in append_head.iter_mut() {
-            *value *= 2;
-        }
-
-        let mut final_vec = Vec::new();
-        for value in append_head {
-            final_vec.push(value);
-        }
-        assert_eq!(final_vec, vec![2, 4, 6, 8, 10]);
-    }
-
-    #[test]
     fn test_pop_front() {
         //This should fail and return an Err
         let list_node = ListNode::new(1);
@@ -326,21 +268,12 @@ mod tests {
     }
 
     #[test]
-    fn test_iter() {
-        let mut append_head = ListNode::new(1);
-        append_head.append(2);
-        append_head.append(3);
-        append_head.append(4);
-        append_head.append(5);
-
-        let final_vec: Vec<&i32> = append_head.iter().collect();
-
-        assert_eq!(final_vec, vec![&1, &2, &3, &4, &5]);
-    }
-
-    #[test]
     fn test_check_has_value() {
         let mut append_head = ListNode::new(1);
+        assert!(append_head.has_value(1));
+        assert!(!append_head.has_value(2));
+
+        //Now add 2 and 3 to the list.
         append_head.append(2);
         append_head.append(3);
 
@@ -351,13 +284,8 @@ mod tests {
 
     #[test]
     fn test_len() {
-        let mut append_head = ListNode::new(1);
-        append_head.append(2);
-        append_head.append(3);
-        append_head.append(4);
-        append_head.append(5);
-
-        assert_eq!(append_head.len(), 5);
+        let list_head = ListNode::from_iter(vec![1, 2, 3, 4, 5]);
+        assert_eq!(list_head.len(), 5);
     }
 
     #[test]
@@ -370,11 +298,16 @@ mod tests {
 
     #[test]
     fn test_partial_eq() {
-        let linked_list1 = ListNode::from_iter(vec![1, 2, 3, 4, 5]);
+        let mut linked_list1 = ListNode::from_iter(vec![1, 2, 3, 4, 5]);
         let linked_list2 = ListNode::from_iter(vec![2, 3, 4, 5, 6]);
         let linked_list3 = ListNode::from_iter(vec![1, 2, 3, 4, 5]);
         assert!(linked_list1 == linked_list3);
         assert!(linked_list1 != linked_list2);
+
+        //Now mutate one of the two identical lists, to check that they no longer
+        //are equal.
+        linked_list1.remove(2).unwrap();
+        assert_ne!(linked_list1, linked_list3);
     }
 
     #[test]
