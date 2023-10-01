@@ -55,7 +55,7 @@ impl<T> FromIterator<T> for ListNode<T> {
         //This will panic if the passed in iterator containers no elements,
         //but since under this implementation one cannot produce a ListNode<T> with no value,
         //the panic is acceptable under the circumstances (no Self can be returned or constructed)
-        return initial_head.unwrap();
+        initial_head.unwrap()
     }
 }
 
@@ -188,7 +188,7 @@ impl<T> ListNode<T> {
 
     pub fn len(&self) -> usize {
         //Returns the length of the Linked List
-        return self.iter().count();
+        self.iter().count()
     }
 
     pub fn has_value(&self, t: T) -> bool
@@ -201,7 +201,7 @@ impl<T> ListNode<T> {
                 return true;
             }
         }
-        return false;
+        false
     }
 }
 
@@ -221,7 +221,7 @@ where
                 return false;
             }
         }
-        return true;
+        true
     }
 }
 

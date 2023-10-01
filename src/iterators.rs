@@ -69,7 +69,7 @@ impl<T> Iterator for IntoIter<T> {
             //Otherwise, set the current_node to a Some of the next_node.
             self.current_node = Some(*next_node.unwrap());
         }
-        return Some(unwrapped_current_node.value);
+        Some(unwrapped_current_node.value)
     }
 }
 pub struct IterMut<'a, T> {
@@ -104,7 +104,7 @@ impl<'a, T> Iterator for IterMut<'a, T> {
             self.current_node = Some(&mut **next_node.unwrap());
         };
         let ref mut current_node_value = unwrapped_current_node.value;
-        return Some(current_node_value);
+        Some(current_node_value)
     }
 }
 
