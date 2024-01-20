@@ -39,17 +39,15 @@ impl<T> FromIterator<T> for ListNode<T> {
     where
         I: IntoIterator<Item = T>,
     {
-        //Convert an Iterator into a Linked List. We have to treat the head of the list
-        //differently than the rest of the insertions. We create the head, and then append the rest of
-        //the items.
+        //!Convert an Iterator into a Linked List. We have to treat the head of the list
+        //!differently than the rest of the insertions. We create the head, and then append the rest of
+        //!the items.
         let mut initial_head: Option<ListNode<T>> = None;
         for value in iter {
             if initial_head.is_none() {
                 initial_head = Some(ListNode::new(value));
-            } else {
-                if let Some(ref mut head_node) = initial_head {
-                    head_node.append(value);
-                }
+            } else if let Some(ref mut head_node) = initial_head {
+                head_node.append(value);
             }
         }
         //This will panic if the passed in iterator containers no elements,
@@ -73,7 +71,7 @@ impl<T> ListNode<T> {
         }
 
         //Otherwise, we can starting iterating through the Linked List
-        let mut counter = 0 as usize;
+        let mut counter = 0_usize;
         let mut current_node = self;
         //In this case, we interate until we are one before the node to remove
         while counter < position_to_remove - 1 {
@@ -97,17 +95,17 @@ impl<T> ListNode<T> {
             }
             //If there is no next node after the node to remove, then we are
             //finished, as the node we are removing is the end of the list
-            return Ok(node_to_remove.value);
+            Ok(node_to_remove.value)
         } else {
             //If the next node is None, there is no node to remove in the first place
-            return Err(OperationsError::ListNotLongEnough);
+            Err(OperationsError::ListNotLongEnough)
         }
     }
 
     pub fn insert(&mut self, t: T, position_to_insert: usize) -> Result<(), OperationsError> {
         //Insert a New Node somewhere in the Linked List determined by the position_to_insert
         //param.
-        let mut counter = 0 as usize;
+        let mut counter = 0_usize;
         let mut current_node = self;
 
         //We iterate over the LinkedList so long as the current position (the counter) is less
@@ -143,8 +141,8 @@ impl<T> ListNode<T> {
         Ok(())
     }
 
-    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
-        Iter::new(&self)
+    pub fn iter(&self) -> Iter<T> {
+        Iter::new(self)
     }
     pub fn new(t: T) -> Self {
         //Create a New ListNode
@@ -158,8 +156,8 @@ impl<T> ListNode<T> {
         //Easy O(1) removal of the first element in the list.
         //To do this, we need to consume the Head and return a new head.
         match self.next {
-            None => return Err(OperationsError::ListNotLongEnough),
-            Some(next_list_node) => return Ok(*next_list_node),
+            None => Err(OperationsError::ListNotLongEnough),
+            Some(next_list_node) => Ok(*next_list_node),
         }
     }
 
@@ -189,6 +187,10 @@ impl<T> ListNode<T> {
     pub fn len(&self) -> usize {
         //Returns the length of the Linked List
         self.iter().count()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn has_value(&self, t: T) -> bool

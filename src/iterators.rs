@@ -25,7 +25,7 @@ impl<'a, T> Iterator for Iter<'a, T> {
         if self.exhausted {
             return None;
         }
-        let ref current_value = self.current_node.value;
+        let current_value = &self.current_node.value;
         if let Some(next_node) = self.current_node.next.as_ref() {
             //if there is a next node, set the current_node to the next_node.
             self.current_node = &**next_node;
@@ -53,9 +53,7 @@ impl<T> IntoIter<T> {
 impl<T> Iterator for IntoIter<T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current_node.is_none() {
-            return None;
-        }
+        self.current_node.as_ref()?;
         //the unwrap is safe because otherwise the function already would have
         //returned.
         let mut unwrapped_current_node = self.current_node.take().unwrap();
@@ -87,9 +85,7 @@ impl<'a, T> IterMut<'a, T> {
 impl<'a, T> Iterator for IterMut<'a, T> {
     type Item = &'a mut T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current_node.is_none() {
-            return None;
-        }
+        self.current_node.as_ref()?;
 
         //Almost the same logic as the IntoIter implementation.
         let unwrapped_current_node = self.current_node.take().unwrap();
@@ -103,7 +99,7 @@ impl<'a, T> Iterator for IterMut<'a, T> {
         } else {
             self.current_node = Some(&mut **next_node.unwrap());
         };
-        let ref mut current_node_value = unwrapped_current_node.value;
+        let current_node_value = &mut unwrapped_current_node.value;
         Some(current_node_value)
     }
 }
